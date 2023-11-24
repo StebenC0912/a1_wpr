@@ -13,6 +13,12 @@ app.use(express.static("public"));
 // set up database connection, run the dbsetup.js file to create the database and tables
 const dbSetup = require("./dbsetup");
 let query; 
+// Define the isValidCredentials function
+async function isValidCredentials(username, email) {
+  const query = 'SELECT * FROM users WHERE username = ? OR email = ?';
+  const [rows] = await connection.execute(query, [username, email]);
+  return rows.length > 0;
+}
 (async () => {
   try {
     await dbSetup();
