@@ -1,0 +1,49 @@
+<!-- inbox.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox</title>
+    <link rel="stylesheet" href="./inboxStyle.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome, <%= fullName %></h1>
+            <a href="/signout">Sign out</a>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="/compose">Compose</a></li>
+                <li class="active"><a href="/inbox">Inbox</a></li>
+                <li><a href="/outbox">Outbox</a></li>
+            </ul>
+        </nav>
+        <main>
+            <h2>Inbox</h2>
+            <% if (emails.length > 0) { %>
+                <ul>
+                    <% emails.forEach(email => { %>
+                        <li>
+                            <a href="/email/<%= email.id %>">
+                                <strong><%= email.senderName %></strong>
+                                <p><%= email.subject %></p>
+                                <p><%= email.dateSent %></p>
+                            </a>
+                        </li>
+                    <% }); %>
+                </ul>
+                <div class="pagination">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/inbox?page=<%= i %>" <%= i === currentPage ? 'class="active"' : '' %>><%= i %></a>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <p>No emails found.</p>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>

@@ -12,13 +12,8 @@ app.use(express.static("public"));
 
 // set up database connection, run the dbsetup.js file to create the database and tables
 const dbSetup = require("./dbsetup");
-let query; 
+let query;
 // Define the isValidCredentials function
-async function isValidCredentials(username, email) {
-  const query = 'SELECT * FROM users WHERE username = ? OR email = ?';
-  const [rows] = await connection.execute(query, [username, email]);
-  return rows.length > 0;
-}
 (async () => {
   try {
     await dbSetup();
@@ -42,18 +37,20 @@ async function isValidCredentials(username, email) {
         res.render("login", { error: req.query.error });
       }
     });
+
     // Handle sign-in form submission
     app.post("/", (req, res) => {
-      const { username, password } = req.body;
+      const { email, password } = req.body;
+      console.log(email, password);
       // Check if username and password are valid use mysql query
-      query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+      query = `SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`;
       connection.query(query, (err, result) => {
         if (err) throw err;
         const isValid = result.length > 0;
+        console.log(result);
         if (isValid) {
           // Create a session for the user and set a cookie with the session ID
-          const sessionId = createSession(username);
-          res.cookie("sessionId", sessionId);
+          res.cookie("sessionId", result[0].id);
           res.redirect("/inbox");
         } else {
           const error = "Invalid information";
@@ -66,48 +63,82 @@ async function isValidCredentials(username, email) {
       res.render("signup", { error: req.query.error });
     });
     // Handle sign-up form submission
-    app.post("/signup", (req, res) => {
-      let notification;
+    app.post("/signup", async (req, res) => {
+      let notification = "";
       const {
-        username,
+        fullName,
+        email,
         password,
         "re-enter-password": reEnterPassword,
-        email,
       } = req.body;
-      // Check if username, password, and email are valid
-      if (password < 6) {
-        notification = " The password is too short (less than 6 characters)"
+
+      if (password.length < 6) {
+        notification = " The password is too short (less than 6 characters)";
+        res.render("signup", { error: notification });
       } else if (password !== reEnterPassword) {
-        notification =
-          "Password and Re-enter password must be the same";
-      } else if (isValidCredentials(username, password, email)) {
-        notification = "Username or email already exists";
+        notification = "Password and Re-enter password must be the same";
+        res.render("signup", { error: notification });
       } else {
-        // Create a session for the user and set a cookie with the session ID
-        const sessionId = createSession(username);
-        res.cookie("sessionId", sessionId);
-        res.redirect("/inbox");
+        query = `SELECT * FROM users WHERE email = ?`;
+        connection.query(query, [email], (err, result) => {
+          if (err) throw err;
+          if (result.length > 0) {
+            notification = "Email already exists";
+            res.render("signup", { error: notification });
+          } else {
+            query = `INSERT INTO users (fullName, email, password) VALUES (?, ?, ?)`;
+            connection.query(query, [fullName, email, password]);
+            console.log("Create new user successfully");
+            res.redirect("/");
+          }
+        });
       }
-      res.render("signup", { error: notification });
     });
+    function getPaginatedEmails(userId, page, pageSize) {
+      // Your logic to retrieve paginated emails based on userId, page, and pageSize
+      // This is just a placeholder, replace it with your actual implementation
+      const emails = [
+        { id: 1, sender: "John Doe", subject: "Meeting Tomorrow" },
+        // Add more email objects as needed
+      ];
+
+      const startIdx = (page - 1) * pageSize;
+      const endIdx = startIdx + pageSize;
+      const paginatedEmails = emails.slice(startIdx, endIdx);
+
+      const totalPages = Math.ceil(emails.length / pageSize);
+
+      return { emails: paginatedEmails, totalPages };
+    }
+
     // Serve the inbox page
     app.get("/inbox", (req, res) => {
       if (req.cookies.sessionId) {
-        res.send("<h1>Welcome to your inbox</h1>");
+        // get the user's messages from the database
+        // and pass them to the inbox page
+        // page
+        query = "SELECT fullName FROM users WHERE id = ?";
+        let userInfoCurrent;
+        connection.query(query, [req.cookies.sessionId], (err, result) => {
+          if (err) throw err;
+          userInfoCurrent = result[0];
+          console.log(userInfoCurrent);
+        });
+        query = `SELECT users.fullName AS senderName, emails.subject, emails.date AS dateSent
+        FROM emails
+        JOIN users ON emails.sender_id = users.id;
+        `;
+        connection.query(query, (err, result) => {
+          if (err) throw err;
+          res.render("inbox", {
+            user: userInfoCurrent,
+            emails: result,
+          });
+        });
       } else {
         res.redirect("/");
       }
     });
-
-    
-
-    function createSession(username) {
-      // Create a session for the user and return the session ID
-      // use the cookie-session library to generate a session ID
-      // no need to store the session ID in the database
-      // just return it
-      return Math.floor(Math.random() * 1000000);
-    }
 
     app.listen(port, () => {
       console.log(`App listening at http://localhost:${port}`);
