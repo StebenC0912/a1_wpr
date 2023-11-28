@@ -1,0 +1,133 @@
+/* emailStyle.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+}
+header a {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+header a:hover {
+    background-color: #0056b3;
+    color: #fff;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+nav {
+    margin-top: 20px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    display: inline-block;
+    margin-right: 15px;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+
+li a {
+    text-decoration: none;
+    color: #007BFF;
+    font-weight: bold;
+}
+
+li.active a {
+    color: #333;
+}
+
+main {
+    margin-top: 20px;
+}
+
+div {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+p {
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #007BFF;
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #0056b3;
+}
+main div p strong {
+    font-weight: bold;
+    color: #007BFF;
+    display: inline-block;
+    width: 100px;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.email-details {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin-top: 20px;
+}
+
+.detail-item {
+    margin-bottom: 15px;
+}
+
+.detail-item strong {
+    display: inline-block;
+    width: 150px;
+    font-weight: bold;
+    color: #007BFF;
+}
+
+.detail-item p {
+    display: inline-block;
+    margin: 0;
+}
+
+.attachment-link {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.attachment-link:hover {
+    text-decoration: underline;
+}

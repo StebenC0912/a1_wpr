@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Detail</title>
+    <link rel="stylesheet" href="/stylesheets/emailStyle.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome, <%= fullName %></h1>
+            <a href="/signout">Sign out</a>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="/compose">Compose</a></li>
+                <li><a href="/inbox">Inbox</a></li>
+                <li><a href="/outbox">Outbox</a></li>
+            </ul>
+        </nav>
+        <main>
+            <h2>Email Detail</h2>
+            <% if (email) { %>
+                <div class="email-details">
+                    <div class="detail-item">
+                        <strong>Sender:</strong> 
+                        <p><%= email.senderName %></p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Recipient:</strong> 
+                        <p><%= email.recipientName %></p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Subject:</strong> 
+                        <p><%= email.subject %></p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Date Sent:</strong> 
+                        <p><%= email.dateSent %></p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Body:</strong>
+                        <p><%- email.body %></p>
+                    </div>
+                    
+                    <% if (email.externalFile) { %>
+                        <div class="detail-item">
+                            <strong>Attachment:</strong> 
+                            <p><a href="/uploads/<%= email.externalFile %>"><%= email.externalFile %></a></p>
+                        </div>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <p>Email not found.</p>
+            <% } %>
+        </main>
+    </div>
+</body>
+</html>

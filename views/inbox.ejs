@@ -5,8 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inbox</title>
-    <link rel="stylesheet" href="./inboxStyle.css">
+    <title><%= isOutbox ? 'Outbox' : 'Inbox' %></title>
+    <link rel="stylesheet" href="./stylesheets/inboxStyle.css">
+    
 </head>
 <body>
     <div class="container">
@@ -16,13 +17,13 @@
         </header>
         <nav>
             <ul>
-                <li><a href="/compose">Compose</a></li>
-                <li class="active"><a href="/inbox">Inbox</a></li>
-                <li><a href="/outbox">Outbox</a></li>
+                <li class="<%= directory === 'Compose' ? 'active' : '' %>"><a href="/compose">Compose</a></li>
+                <li class="<%= directory === 'Inbox' && !isOutbox ? 'active' : '' %>"><a href="/inbox">Inbox</a></li>
+                <li class="<%= directory === 'Outbox' || isOutbox ? 'active' : '' %>"><a href="/outbox">Outbox</a></li>
             </ul>
         </nav>
         <main>
-            <h2>Inbox</h2>
+            <h2><%= isOutbox ? 'Outbox' : 'Inbox' %></h2>
             <% if (emails.length > 0) { %>
                 <ul>
                     <% emails.forEach(email => { %>
@@ -37,7 +38,7 @@
                 </ul>
                 <div class="pagination">
                     <% for (let i = 1; i <= totalPages; i++) { %>
-                        <a href="/inbox?page=<%= i %>" <%= i === currentPage ? 'class="active"' : '' %>><%= i %></a>
+                        <a href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>" <%= i === currentPage ? 'class="active"' : '' %>><%= i %></a>
                     <% } %>
                 </div>
             <% } else { %>
