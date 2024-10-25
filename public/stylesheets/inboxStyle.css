@@ -168,3 +168,23 @@ table td:nth-child(4) {
     color: white;
     border-color: #0056b3;
 }
+
+.delete-selected-button {
+    background-color: #FF6347; /* Tomato color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.delete-selected-button:hover {
+    background-color: #FF4500; /* Darker red */
+}
+
+.delete-selected-button:focus {
+    outline: none;
+}
+

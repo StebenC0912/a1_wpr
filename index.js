@@ -105,13 +105,13 @@ let query;
           query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
             FROM emails
             JOIN users ON emails.sender_id = users.id
-            WHERE emails.recipient_id = ${userId}
+            WHERE emails.recipient_id = ${userId}   AND emails.isVisibleForRecipient = TRUE
             ORDER BY emails.date DESC`;
         } else {
           query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
             FROM emails
             JOIN users ON emails.recipient_id = users.id
-            WHERE emails.sender_id = ${userId}
+            WHERE emails.sender_id = ${userId} AND emails.isVisibleForSender = TRUE
             ORDER BY emails.date DESC`;
         }
         connection.query(query, (err, result) => {
@@ -381,6 +381,34 @@ let query;
         }
       });
     });
+
+    // Handle deletion of selected emails
+    app.post("/delete-emails", (req, res) => {
+      const emailIds = req.body.emailIds;
+
+      if (!emailIds) {
+        // No emails were selected for deletion
+        return res.redirect(req.get("referer"));
+      }
+
+      const emailIdsArray = Array.isArray(emailIds) ? emailIds : [emailIds];
+
+      query = `DELETE FROM emails WHERE id IN (?) AND (
+    (sender_id = ? AND isVisibleForSender = TRUE) OR
+    (recipient_id = ? AND isVisibleForRecipient = TRUE)
+  )`;
+
+      connection.query(
+        query,
+        [emailIdsArray, req.cookies.sessionId, req.cookies.sessionId],
+        (err, result) => {
+          if (err) throw err;
+          console.log("Deleted emails successfully:", result.affectedRows);
+          res.redirect(req.get("referer")); // Redirect to the previous page
+        }
+      );
+    });
+
     // sign out
     app.get("/signout", (req, res) => {
       res.clearCookie("sessionId");

@@ -44,6 +44,8 @@ const mysql = require("mysql2/promise");
         id INT AUTO_INCREMENT PRIMARY KEY,
         sender_id INT NOT NULL,
         recipient_id INT NOT NULL,
+        isVisibleForSender BOOLEAN DEFAULT TRUE,
+        isVisibleForRecipient BOOLEAN DEFAULT TRUE,
         subject VARCHAR(255) NOT NULL,
         body TEXT NOT NULL,
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
