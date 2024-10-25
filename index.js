@@ -11,15 +11,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static("public"));
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/')
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
   },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname)
-  }
-})
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage });
 let query;
 // Define the isValidCredentials function
 (async () => {
@@ -29,8 +29,8 @@ let query;
       host: "localhost",
       port: 3306,
       user: "root",
-      password: "stebenc09122002",
-      database: "wpr2023",
+      password: "Stebenc0912@))@",
+      database: "wpr2001040122",
     });
     connection.connect((err) => {
       console.log("Connected to MySQL database index");
@@ -148,6 +148,37 @@ let query;
               userId,
               1
             );
+            // Get current date for comparison
+            const today = new Date();
+            const currentYear = today.getFullYear();
+
+            // Format the date before rendering the template
+            emails.forEach((email) => {
+              const emailDate = new Date(email.dateSent);
+              const emailYear = emailDate.getFullYear();
+              const isToday = today.toDateString() === emailDate.toDateString(); // Check if the email was sent today
+
+              if (isToday) {
+                // If today, only show hour and minute
+                email.dateSent = emailDate.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else if (emailYear === currentYear) {
+                // If in the same year, show "MMM DD" format
+                email.dateSent = emailDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+              } else {
+                // If from a previous year, show "MMM DD YYYY"
+                email.dateSent = emailDate.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                });
+              }
+            });
             res.render("inbox", {
               directory: "Inbox",
               fullName: fullName,
@@ -183,6 +214,37 @@ let query;
               userId,
               2
             );
+            // Get current date for comparison
+            const today = new Date();
+            const currentYear = today.getFullYear();
+
+            // Format the date before rendering the template
+            emails.forEach((email) => {
+              const emailDate = new Date(email.dateSent);
+              const emailYear = emailDate.getFullYear();
+              const isToday = today.toDateString() === emailDate.toDateString(); // Check if the email was sent today
+
+              if (isToday) {
+                // If today, only show hour and minute
+                email.dateSent = emailDate.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              } else if (emailYear === currentYear) {
+                // If in the same year, show "MMM DD" format
+                email.dateSent = emailDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+              } else {
+                // If from a previous year, show "MMM DD YYYY"
+                email.dateSent = emailDate.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                });
+              }
+            });
             res.render("inbox", {
               directory: "Outbox",
               fullName: fullName,
@@ -248,7 +310,6 @@ let query;
                 error: "You can't send email to yourself",
               });
             } else {
-
               // Insert the email into the database
               query =
                 "INSERT INTO emails (sender_id, recipient_id, subject, body, externalFile) VALUES (?, ?, ?, ?, ?)";
@@ -288,7 +349,7 @@ let query;
       JOIN users AS sender ON emails.sender_id = sender.id
       JOIN users AS receiver ON emails.recipient_id = receiver.id
       WHERE emails.id = ${emailId}`;
-      
+
         connection.query(query, (err, result) => {
           if (err) throw err;
           let email = result[0];
@@ -314,7 +375,7 @@ let query;
           res.status(err.status).end();
         } else {
           // Redirect after the download is complete
-          res.on('finish', () => {
+          res.on("finish", () => {
             res.redirect("/inbox");
           });
         }

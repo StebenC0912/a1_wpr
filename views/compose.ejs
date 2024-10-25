@@ -12,9 +12,11 @@
             <h1>Welcome, <%= fullName %></h1>
             <a href="/signout">Sign out</a>
         </header>
+
         <% if (error) { %>
             <p class="error-message"><%= error %></p>
         <% } %>
+
         <nav>
             <ul>
                 <li class="active"><a href="/compose">Compose</a></li>
@@ -22,6 +24,7 @@
                 <li><a href="/outbox">Outbox</a></li>
             </ul>
         </nav>
+
         <main>
             <h2>Compose</h2>
             <form action="/compose" method="post" enctype="multipart/form-data">
@@ -32,14 +35,18 @@
                     <option value="<%= user.email %>"><%= user.fullName %></option>
                   <% }) %>
                 </select>
+
                 <label for="subject">Subject:</label>
                 <input type="text" id="subject" name="subject">
+
                 <label for="body">Body:</label>
                 <textarea id="body" name="body"></textarea>
+
                 <label for="attachment">Attachment:</label>
                 <input type="file" id="attachment" name="attachment">
+
                 <input type="submit" value="Send">
-              </form>
+            </form>
         </main>
     </div>
 </body>

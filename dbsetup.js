@@ -6,9 +6,13 @@ const mysql = require("mysql2/promise");
       host: "localhost",
       port: 3306,
       user: "root",
-      password: "stebenc09122002",
-      database: "wpr2023",
+      password: "Stebenc0912@))@",
     });
+
+    await connection.query("CREATE DATABASE IF NOT EXISTS wpr2001040122");
+    console.log("Database created or already exists");
+    
+    await connection.changeUser({ database: "wpr2001040122" });
 
     console.log("Connected to MySQL database");
 
@@ -80,7 +84,6 @@ const mysql = require("mysql2/promise");
     (2, 1, 'Follow-up', 'Just following up on our previous conversation.', '2023-11-24 14:15:00')
 `;
 
-  
     await connection.query(insertEmails);
   } catch (err) {
     console.error("Error setting up database: ", err);

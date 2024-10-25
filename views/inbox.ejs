@@ -1,5 +1,3 @@
-<!-- inbox.ejs -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= isOutbox ? 'Outbox' : 'Inbox' %></title>
     <link rel="stylesheet" href="./stylesheets/inboxStyle.css">
-    
 </head>
 <body>
     <div class="container">
@@ -17,28 +14,46 @@
         </header>
         <nav>
             <ul>
-                <li class="<%= directory === 'Compose' ? 'active' : '' %>"><a href="/compose">Compose</a></li>
-                <li class="<%= directory === 'Inbox' && !isOutbox ? 'active' : '' %>"><a href="/inbox">Inbox</a></li>
-                <li class="<%= directory === 'Outbox' || isOutbox ? 'active' : '' %>"><a href="/outbox">Outbox</a></li>
+                <li class="<%= directory === 'Compose' ? 'active' : '' %>">
+                    <a href="/compose">Compose</a>
+                </li>
+                <li class="<%= directory === 'Inbox' && !isOutbox ? 'active' : '' %>">
+                    <a href="/inbox">Inbox</a>
+                </li>
+                <li class="<%= directory === 'Outbox' || isOutbox ? 'active' : '' %>">
+                    <a href="/outbox">Outbox</a>
+                </li>
             </ul>
         </nav>
         <main>
             <h2><%= isOutbox ? 'Outbox' : 'Inbox' %></h2>
             <% if (emails.length > 0) { %>
-                <ul>
-                    <% emails.forEach(email => { %>
-                        <li>
-                            <a href="/email/<%= email.id %>">
-                                <strong><%= email.senderName %></strong>
-                                <p><%= email.subject %></p>
-                                <p><%= email.dateSent %></p>
-                            </a>
-                        </li>
-                    <% }); %>
-                </ul>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Sender</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% emails.forEach(email => { %>
+                            <tr class="clickable-row" data-href="/email/<%= email.id %>">
+                                <td><input type="checkbox" onclick="event.stopPropagation();"></td>
+                                <td><%= email.senderName %></td>
+                                <td><%= email.subject %></td>
+                                <td><%= email.dateSent %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
                 <div class="pagination">
                     <% for (let i = 1; i <= totalPages; i++) { %>
-                        <a href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>" <%= i === currentPage ? 'class="active"' : '' %>><%= i %></a>
+                        <a href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>" 
+                           class="<%= i === currentPage ? 'active' : '' %>">
+                           <%= i %>
+                        </a>
                     <% } %>
                 </div>
             <% } else { %>
@@ -46,5 +61,15 @@
             <% } %>
         </main>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var rows = document.querySelectorAll('.clickable-row');
+            rows.forEach(function(row) {
+                row.addEventListener('click', function() {
+                    window.location.href = this.dataset.href;
+                });
+            });
+        });
+    </script>
 </body>
 </html>

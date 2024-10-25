@@ -12,6 +12,7 @@
             <h1>Welcome, <%= fullName %></h1>
             <a href="/signout">Sign out</a>
         </header>
+
         <nav>
             <ul>
                 <li><a href="/compose">Compose</a></li>
@@ -19,42 +20,49 @@
                 <li><a href="/outbox">Outbox</a></li>
             </ul>
         </nav>
-        <main>
-            <h2>Email Detail</h2>
-            <% if (email) { %>
-                <div class="email-details">
-                    <div class="detail-item">
-                        <strong>Sender:</strong> 
-                        <p><%= email.senderName %></p>
+
+        <div class="email-container">
+            <ul>
+                <p>Email Subject:<strong> <%= email.subject %></strong></p>
+                <p>From: <strong><%= email.senderName %></strong> <%= email.senderEmail %></p>
+                <p>To: <strong><%= email.recipientName %></strong> <%= email.recipientEmail %></p>
+                <p>Sent: <strong><%= email.dateSent.toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></strong> </p>
+            </ul>
+
+            <main>
+                <!-- Email body -->
+                <div class="email-body">
+                    <div class="email-content">
+                        <p><%= email.body %></p>
                     </div>
-                    <div class="detail-item">
-                        <strong>Recipient:</strong> 
-                        <p><%= email.recipientName %></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Subject:</strong> 
-                        <p><%= email.subject %></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Date Sent:</strong> 
-                        <p><%= email.dateSent %></p>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Body:</strong>
-                        <p><%- email.body %></p>
-                    </div>
-                    
-                    <% if (email.externalFile) { %>
-                        <div class="detail-item">
-                            <strong>Attachment:</strong> 
-                            <p><a href="/uploads/<%= email.externalFile %>"><%= email.externalFile %></a></p>
-                        </div>
-                    <% } %>
                 </div>
-            <% } else { %>
-                <p>Email not found.</p>
-            <% } %>
-        </main>
+
+                <!-- Replies -->
+                <% if (email.conversation && email.conversation.length > 0) { %>
+                <div class="email-replies">
+                    <% email.conversation.forEach(reply => { %>
+                    <div class="reply-item">
+                        <div class="reply-meta">
+                            <strong><%= reply.senderName %></strong> (<%= reply.senderEmail %>) 
+                            <span class="reply-date"><%= reply.dateSent.toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+                        </div>
+                        <div class="reply-body">
+                            <p><%= reply.body %></p>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <% } %>
+
+                <!-- Attachments -->
+                <% if (email.externalFile) { %>
+                <div class="email-attachment">
+                    <strong>Attachment:</strong> 
+                    <a href="/uploads/<%= email.externalFile %>"><%= email.externalFile %></a>
+                </div>
+                <% } %>
+            </main>
+        </div>
     </div>
 </body>
 </html>
