@@ -190,7 +190,23 @@ let query;
           }
         );
       } else {
-        res.redirect("/");
+        return res.status(403).send(`
+          <html>
+            <head>
+              <title>Access Denied</title>
+              <meta http-equiv="refresh" content="5;url=/" />
+            </head>
+            <body>
+              <h1>403 - Access Denied</h1>
+              <p>You will be redirected to the login page in 5 seconds...</p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 5000);
+              </script>
+            </body>
+          </html>
+        `)
       }
     });
     // server outbox
@@ -256,7 +272,23 @@ let query;
           }
         );
       } else {
-        res.redirect("/");
+        return res.status(403).send(`
+          <html>
+            <head>
+              <title>Access Denied</title>
+              <meta http-equiv="refresh" content="5;url=/" />
+            </head>
+            <body>
+              <h1>403 - Access Denied</h1>
+              <p>You will be redirected to the login page in 5 seconds...</p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 5000);
+              </script>
+            </body>
+          </html>
+        `)
       }
     });
     // server compose
@@ -274,7 +306,23 @@ let query;
           });
         });
       } else {
-        res.redirect("/");
+        return res.status(403).send(`
+          <html>
+            <head>
+              <title>Access Denied</title>
+              <meta http-equiv="refresh" content="5;url=/" />
+            </head>
+            <body>
+              <h1>403 - Access Denied</h1>
+              <p>You will be redirected to the login page in 5 seconds...</p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 5000);
+              </script>
+            </body>
+          </html>
+        `)
       }
     });
     // Handle compose form submission
