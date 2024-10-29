@@ -5,7 +5,7 @@ const db = require("mysql2");
 const ejs = require("ejs");
 const app = express();
 const port = 8000;
-
+app.use(express.json());
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -206,7 +206,7 @@ let query;
               </script>
             </body>
           </html>
-        `)
+        `);
       }
     });
     // server outbox
@@ -288,15 +288,16 @@ let query;
               </script>
             </body>
           </html>
-        `)
+        `);
       }
     });
     // server compose
     app.get("/compose", (req, res) => {
       if (req.cookies.sessionId) {
         let fullName = req.cookies.fullName;
-        query = "SELECT * FROM users";
-        connection.query(query, (err, result) => {
+        query = "SELECT * FROM users WHERE id != ?";
+        let userId = req.cookies.sessionId;
+        connection.query(query, [userId], (err, result) => {
           if (err) throw err;
           const users = result;
           res.render("compose", {
@@ -322,7 +323,7 @@ let query;
               </script>
             </body>
           </html>
-        `)
+        `);
       }
     });
     // Handle compose form submission
@@ -331,61 +332,66 @@ let query;
 
       query = "SELECT * FROM users  WHERE email = ?";
       let fullName = req.cookies.fullName;
+      let userId = req.cookies.sessionId;
       console.log(body);
-      connection.query("SELECT * FROM users", (err, result) => {
-        if (err) throw err;
-        const usersList = result;
-        if (recipient === "") {
-          res.render("compose", {
-            fullName: fullName,
-            users: usersList,
-            error: "Please choose recipient",
-          });
-          return;
-        }
-        if (subject === "") {
-          subject = "No subject";
-        }
-        connection.query(query, [recipient], (err, result) => {
+      connection.query(
+        "SELECT * FROM users WHERE id != ?",
+        [userId],
+        (err, result) => {
           if (err) throw err;
-          if (result.length > 0) {
-            // Recipient found, you can access recipient details using result[0]
-            const recipientId = result[0].id;
-            if (recipientId == req.cookies.sessionId) {
-              res.render("compose", {
-                fullName: fullName,
-                users: usersList,
-                error: "You can't send email to yourself",
-              });
+          const usersList = result;
+          if (recipient === "") {
+            res.render("compose", {
+              fullName: fullName,
+              users: usersList,
+              error: "Please choose recipient",
+            });
+            return;
+          }
+          if (subject === "") {
+            subject = "(no subject)";
+          }
+          connection.query(query, [recipient], (err, result) => {
+            if (err) throw err;
+            if (result.length > 0) {
+              // Recipient found, you can access recipient details using result[0]
+              const recipientId = result[0].id;
+              if (recipientId == req.cookies.sessionId) {
+                res.render("compose", {
+                  fullName: fullName,
+                  users: usersList,
+                  error: "You can't send email to yourself",
+                });
+              } else {
+                // Insert the email into the database
+                query =
+                  "INSERT INTO emails (sender_id, recipient_id, subject, body, externalFile) VALUES (?, ?, ?, ?, ?)";
+                connection.query(query, [
+                  req.cookies.sessionId,
+                  recipientId,
+                  subject,
+                  body,
+                  req.file ? req.file.originalname : null,
+                ]);
+                console.log("Email sent successfully");
+                res.render("compose", {
+                  fullName: req.cookies.fullName,
+                  users: usersList,
+                  error: "Send success",
+                }); // Render the compose page with no error
+              }
             } else {
-              // Insert the email into the database
-              query =
-                "INSERT INTO emails (sender_id, recipient_id, subject, body, externalFile) VALUES (?, ?, ?, ?, ?)";
-              connection.query(query, [
-                req.cookies.sessionId,
-                recipientId,
-                subject,
-                body,
-                req.file ? req.file.originalname : null,
-              ]);
-              console.log("Email sent successfully");
+              // Recipient not found
+              console.log("Recipient does not exist");
               res.render("compose", {
                 fullName: req.cookies.fullName,
                 users: usersList,
-                error: "Send success",
-              }); // Render the compose page with no error
+                error: "Recipient does not exist",
+              });
             }
-          } else {
-            // Recipient not found
-            console.log("Recipient does not exist");
-            res.render("compose", {
-              fullName: req.cookies.fullName,
-              users: usersList,
-              error: "Recipient does not exist",
-            });
-          }
-        });
-      });
+          });
+        }
+      );
     });
 
     // Serve the email detail page
@@ -436,25 +442,70 @@ let query;
 
       if (!emailIds) {
         // No emails were selected for deletion
-        return res.redirect(req.get("referer"));
+        return res.status(400).json({ message: "No emails selected" });
       }
 
       const emailIdsArray = Array.isArray(emailIds) ? emailIds : [emailIds];
 
       query = `DELETE FROM emails WHERE id IN (?) AND (
-    (sender_id = ? AND isVisibleForSender = TRUE) OR
-    (recipient_id = ? AND isVisibleForRecipient = TRUE)
-  )`;
+          (sender_id = ? AND isVisibleForSender = TRUE) OR
+          (recipient_id = ? AND isVisibleForRecipient = TRUE)
+      )`;
 
       connection.query(
         query,
         [emailIdsArray, req.cookies.sessionId, req.cookies.sessionId],
         (err, result) => {
-          if (err) throw err;
+          if (err) {
+            console.log(emailIdsArray);
+            return res.status(500).json({ message: "Error deleting emails" });
+          }
+
           console.log("Deleted emails successfully:", result.affectedRows);
-          res.redirect(req.get("referer")); // Redirect to the previous page
+          res.json({ success: true, deletedEmailIds: emailIdsArray });
         }
       );
+    });
+
+    app.get("/fetch-emails", (req, res) => {
+      const userId = req.cookies.sessionId;
+      const isOutbox = req.query.isOutbox === "true"; // Check if it is the outbox or inbox
+
+      // Modify this function to fetch either inbox or outbox emails
+      function getPaginatedEmails(page, userId, number) {
+        return new Promise((resolve, reject) => {
+          if (number === 1) {
+            query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
+            FROM emails
+            JOIN users ON emails.sender_id = users.id
+            WHERE emails.recipient_id = ${userId} AND emails.isVisibleForRecipient = TRUE
+            ORDER BY emails.date DESC`;
+          } else {
+            query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
+            FROM emails
+            JOIN users ON emails.recipient_id = users.id
+            WHERE emails.sender_id = ${userId} AND emails.isVisibleForSender = TRUE
+            ORDER BY emails.date DESC`;
+          }
+          connection.query(query, (err, result) => {
+            if (err) reject(err);
+            resolve(result); // Return updated emails
+          });
+        });
+      }
+
+      // Fetch the updated emails after deletion
+      const page = parseInt(req.query.page) || 1;
+      const isOutboxFlag = isOutbox ? 2 : 1;
+      getPaginatedEmails(page, userId, isOutboxFlag)
+        .then((emails) => {
+          res.json({ success: true, emails });
+        })
+        .catch((err) => {
+          res
+            .status(500)
+            .json({ success: false, message: "Error fetching emails" });
+        });
     });
 
     // sign out

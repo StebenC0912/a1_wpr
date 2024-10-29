@@ -1,90 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= isOutbox ? 'Outbox' : 'Inbox' %></title>
-    <link rel="stylesheet" href="./stylesheets/inboxStyle.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./stylesheets/inboxStyle.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>Welcome, <%= fullName %></h1>
-            <a href="/signout">Sign out</a>
-        </header>
-        <nav>
-            <ul>
-                <li class="<%= directory === 'Compose' ? 'active' : '' %>">
-                    <a href="/compose">Compose</a>
-                </li>
-                <li class="<%= directory === 'Inbox' && !isOutbox ? 'active' : '' %>">
-                    <a href="/inbox">Inbox</a>
-                </li>
-                <li class="<%= directory === 'Outbox' || isOutbox ? 'active' : '' %>">
-                    <a href="/outbox">Outbox</a>
-                </li>
-            </ul>
-        </nav>
-        <main>
-            <h2><%= isOutbox ? 'Outbox' : 'Inbox' %></h2>
+      <header>
+        <h1>Welcome, <%= fullName %></h1>
+        <a href="/signout">Sign out</a>
+      </header>
+      <nav>
+        <ul>
+          <li class="<%= directory === 'Compose' ? 'active' : '' %>">
+            <a href="/compose">Compose</a>
+          </li>
+          <li class="<%= directory === 'Inbox' && !isOutbox ? 'active' : '' %>">
+            <a href="/inbox">Inbox</a>
+          </li>
+          <li class="<%= directory === 'Outbox' || isOutbox ? 'active' : '' %>">
+            <a href="/outbox">Outbox</a>
+          </li>
+        </ul>
+      </nav>
+      <main>
+        <h2><%= isOutbox ? 'Sent' : 'Inbox' %></h2>
 
-            <!-- Delete form -->
-            <form id="deleteForm" action="/delete-emails" method="POST" onsubmit="return confirm('Are you sure you want to delete selected emails?');">
-                <button type="submit" class="delete-selected-button">Delete Selected</button>
+        <!-- Delete form -->
+        <form
+          id="deleteForm"
+          action="/delete-emails"
+          method="POST"
+          onsubmit="return confirm('Are you sure you want to delete selected emails?');"
+        >
+          <button type="submit" class="delete-selected-button">
+            Delete Selected
+          </button>
 
-                <% if (emails.length > 0) { %>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)"></th>
-                                <th>Sender</th>
-                                <th>Subject</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% emails.forEach(email => { %>
-                                <tr class="clickable-row" data-href="/email/<%= email.id %>">
-                                    <td><input type="checkbox" name="emailIds" value="<%= email.id %>" onclick="event.stopPropagation();"></td>
-                                    <td><%= email.senderName %></td>
-                                    <td><%= email.subject %></td>
-                                    <td><%= email.dateSent %></td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                    <div class="pagination">
-                        <% for (let i = 1; i <= totalPages; i++) { %>
-                            <a href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>" 
-                               class="<%= i === currentPage ? 'active' : '' %>">
-                               <%= i %>
-                            </a>
-                        <% } %>
-                    </div>
-                <% } else { %>
-                    <p>No emails found.</p>
-                <% } %>
-            </form>
-        </main>
+          <% if (emails.length > 0) { %>
+          <table>
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    id="select-all"
+                    onclick="toggleSelectAll(this)"
+                  />
+                </th>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% emails.forEach(email => { %>
+              <tr class="clickable-row" data-href="/email/<%= email.id %>">
+                <td>
+                  <input
+                    type="checkbox"
+                    name="emailIds"
+                    value="<%= email.id %>"
+                    onclick="event.stopPropagation();"
+                  />
+                </td>
+                <td><%= email.senderName %></td>
+                <td><%= email.subject %></td>
+                <td><%= email.dateSent %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <a
+              href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>"
+              class="<%= i === currentPage ? 'active' : '' %>"
+            >
+              <%= i %>
+            </a>
+            <% } %>
+          </div>
+          <% } else { %>
+          <p>No emails found.</p>
+          <% } %>
+        </form>
+      </main>
     </div>
     <script>
-        // Function to toggle all checkboxes
-        function toggleSelectAll(source) {
-            var checkboxes = document.querySelectorAll('input[name="emailIds"]');
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = source.checked;
-            });
-        }
+      document.addEventListener("DOMContentLoaded", function () {
+        var rows = document.querySelectorAll(".clickable-row");
+        rows.forEach(function (row) {
+          row.addEventListener("click", function () {
+            window.location.href = this.dataset.href;
+          });
+        });
 
-        // Make row clickable, but don't interfere with checkbox clicks
-        document.addEventListener('DOMContentLoaded', function() {
-            var rows = document.querySelectorAll('.clickable-row');
-            rows.forEach(function(row) {
-                row.addEventListener('click', function() {
-                    window.location.href = this.dataset.href;
+        // Function to toggle all checkboxes
+        const selectAllCheckbox = document.getElementById("select-all");
+        selectAllCheckbox.addEventListener("click", function () {
+          const checkboxes = document.querySelectorAll(
+            'input[name="emailIds"]'
+          );
+          checkboxes.forEach(function (checkbox) {
+            checkbox.checked = selectAllCheckbox.checked;
+          });
+        });
+
+        // Handle form submission without reloading the page
+        const deleteForm = document.getElementById("deleteForm");
+        deleteForm.addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent form submission
+
+          // Collect checked email IDs
+          const emailIds = Array.from(
+            document.querySelectorAll('input[name="emailIds"]:checked')
+          ).map((checkbox) => checkbox.value);
+
+          if (emailIds.length === 0) {
+            alert("Please select emails to delete.");
+            return;
+          }
+
+          // Send deletion request using fetch
+          fetch("/delete-emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ emailIds }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Remove the deleted emails from the UI
+                emailIds.forEach((id) => {
+                  const row = document
+                    .querySelector(`input[value="${id}"]`)
+                    .closest("tr");
+                  row.remove();
                 });
+                alert("Selected emails deleted successfully.");
+              } else {
+                alert("Error deleting emails.");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Failed to delete emails.");
             });
         });
+      });
     </script>
-</body>
+  </body>
 </html>
