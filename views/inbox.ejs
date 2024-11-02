@@ -7,12 +7,9 @@
     <link rel="stylesheet" href="./stylesheets/inboxStyle.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>Welcome, <%= fullName %></h1>
-        <a href="/signout">Sign out</a>
-      </header>
-      <nav>
+    <div class="main-container">
+      <aside class="sidebar">
+        <h2>MAIL HUB</h2>
         <ul>
           <li class="<%= directory === 'Compose' ? 'active' : '' %>">
             <a href="/compose">Compose</a>
@@ -24,70 +21,77 @@
             <a href="/outbox">Outbox</a>
           </li>
         </ul>
-      </nav>
-      <main>
-        <h2><%= isOutbox ? 'Sent' : 'Inbox' %></h2>
-
-        <!-- Delete form -->
-        <form
-          id="deleteForm"
-          action="/delete-emails"
-          method="POST"
-          onsubmit="return confirm('Are you sure you want to delete selected emails?');"
-        >
-          <button type="submit" class="delete-selected-button">
-            Delete Selected
-          </button>
-
-          <% if (emails.length > 0) { %>
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    id="select-all"
-                    onclick="toggleSelectAll(this)"
-                  />
-                </th>
-                <th>Sender</th>
-                <th>Subject</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% emails.forEach(email => { %>
-              <tr class="clickable-row" data-href="/email/<%= email.id %>">
-                <td>
-                  <input
-                    type="checkbox"
-                    name="emailIds"
-                    value="<%= email.id %>"
-                    onclick="event.stopPropagation();"
-                  />
-                </td>
-                <td><%= email.senderName %></td>
-                <td><%= email.subject %></td>
-                <td><%= email.dateSent %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-          <div class="pagination">
-            <% for (let i = 1; i <= totalPages; i++) { %>
-            <a
-              href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>"
-              class="<%= i === currentPage ? 'active' : '' %>"
-            >
-              <%= i %>
-            </a>
-            <% } %>
+      </aside>
+      <div class="content">
+        <header class="header">
+          <h1>Welcome, <%= fullName %></h1>
+          <div class="user-info">
+            <span><%= fullName %></span>
+            <a href="/signout">Sign out</a>
           </div>
-          <% } else { %>
-          <p>No emails found.</p>
-          <% } %>
-        </form>
-      </main>
+        </header>
+        <main>
+          <h2><%= isOutbox ? 'Sent' : 'Inbox' %></h2>
+          <form
+            id="deleteForm"
+            action="/delete-emails"
+            method="POST"
+            onsubmit="return confirm('Are you sure you want to delete selected emails?');"
+          >
+            <!-- Delete Selected Button -->
+            <button type="submit" class="delete-selected-button">
+              Delete Selected
+            </button>
+
+            <% if (emails.length > 0) { %>
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      id="select-all"
+                      onclick="toggleSelectAll(this)"
+                    />
+                  </th>
+                  <th>Sender</th>
+                  <th>Subject</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% emails.forEach(email => { %>
+                <tr class="clickable-row" data-href="/email/<%= email.id %>">
+                  <td>
+                    <input
+                      type="checkbox"
+                      name="emailIds"
+                      value="<%= email.id %>"
+                      onclick="event.stopPropagation();"
+                    />
+                  </td>
+                  <td><%= email.senderName %></td>
+                  <td><%= email.subject %></td>
+                  <td><%= email.dateSent %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <div class="pagination">
+              <% for (let i = 1; i <= totalPages; i++) { %>
+              <a
+                href="<%= isOutbox ? '/outbox?page=' : '/inbox?page=' %><%= i %>"
+                class="<%= i === currentPage ? 'active' : '' %>"
+                ><%= i %></a
+              >
+              <% } %>
+            </div>
+            <% } else { %>
+            <p>No emails found.</p>
+            <% } %>
+          </form>
+        </main>
+      </div>
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
