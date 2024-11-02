@@ -467,47 +467,6 @@ let query;
       );
     });
 
-    app.get("/fetch-emails", (req, res) => {
-      const userId = req.cookies.sessionId;
-      const isOutbox = req.query.isOutbox === "true"; // Check if it is the outbox or inbox
-
-      // Modify this function to fetch either inbox or outbox emails
-      function getPaginatedEmails(page, userId, number) {
-        return new Promise((resolve, reject) => {
-          if (number === 1) {
-            query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
-            FROM emails
-            JOIN users ON emails.sender_id = users.id
-            WHERE emails.recipient_id = ${userId} AND emails.isVisibleForRecipient = TRUE
-            ORDER BY emails.date DESC`;
-          } else {
-            query = `SELECT DISTINCT users.fullName AS senderName, emails.id, emails.subject, emails.date AS dateSent
-            FROM emails
-            JOIN users ON emails.recipient_id = users.id
-            WHERE emails.sender_id = ${userId} AND emails.isVisibleForSender = TRUE
-            ORDER BY emails.date DESC`;
-          }
-          connection.query(query, (err, result) => {
-            if (err) reject(err);
-            resolve(result); // Return updated emails
-          });
-        });
-      }
-
-      // Fetch the updated emails after deletion
-      const page = parseInt(req.query.page) || 1;
-      const isOutboxFlag = isOutbox ? 2 : 1;
-      getPaginatedEmails(page, userId, isOutboxFlag)
-        .then((emails) => {
-          res.json({ success: true, emails });
-        })
-        .catch((err) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Error fetching emails" });
-        });
-    });
-
     // sign out
     app.get("/signout", (req, res) => {
       res.clearCookie("sessionId");

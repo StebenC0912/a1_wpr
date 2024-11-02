@@ -1,6 +1,6 @@
 const mysql = require("mysql2/promise");
 
-(async () => {
+async function setupDatabase() {
   try {
     const connection = await mysql.createConnection({
       host: "localhost",
@@ -31,7 +31,7 @@ const mysql = require("mysql2/promise");
     const insertUsers = `
     INSERT IGNORE INTO users (email, password, fullName)
     VALUES
-    ('a@a.com', '123456', 'Alice Doe'),
+    ('a@a.com', '123', 'Alice Doe'),
     ('b@b.com', '123456', 'Bob Smith'),
     ('c@c.com', '123456', 'Charlie Brown')
     `;
@@ -90,4 +90,6 @@ const mysql = require("mysql2/promise");
   } catch (err) {
     console.error("Error setting up database: ", err);
   }
-})();
+}
+
+setupDatabase();
